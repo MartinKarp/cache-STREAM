@@ -6,7 +6,7 @@ nranks=32
 #For shorter vectors we make sure that the number of ops remains constant.
 #We do this by choosing TIMES=base^POW/vector_length
 base=3
-POW=15
+POW=14
 #The number of times we run STREAM
 NRUNS=50
 #Compiler
