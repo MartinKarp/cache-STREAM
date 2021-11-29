@@ -133,6 +133,9 @@
 #ifndef NTIMES
 #   define NTIMES	10
 #endif
+/*  Martin Karp 29 November 2021
+ *  We utilize this parameter extensively to make sure that the tests run for long enough to see the effects fo caches.
+ */
 #ifndef TIMES
 #   define TIMES        1
 #endif
@@ -413,6 +416,8 @@ main()
 
     /* Get initial timing estimate to compare to timer granularity. */
 	/* All ranks need to run this code since it changes the values in array a */
+    /* Martin Karp 29 November 2021 CHANGE OF DEFINITION. */
+    /* We measure over TIMES iterations to get the actual runtime, rather than only one iter. */
     t = MPI_Wtime();
     for (iter = 0; iter < TIMES; iter++){
 #pragma omp parallel for
@@ -429,7 +434,7 @@ main()
 		printf("Each test below will take on the order"
 		" of %d microseconds.\n", (int) t  );
 		printf("   (= %d timer ticks)\n", (int) (t/quantum) );
-		printf("Increase the size of the arrays if this shows that\n");
+		printf("Increase the size of the arrays or set a larger TIMES if this shows that\n");
 		printf("you are not getting at least 20 timer ticks per test.\n");
 
 		printf(HLINE);
@@ -463,7 +468,7 @@ main()
 #ifdef TUNED
         tuned_STREAM_Copy();
 #else
-	        for(iter = 0; iter < TIMES; iter++){
+	    for(iter = 0; iter < TIMES; iter++){
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			c[j] = a[j];
@@ -479,7 +484,7 @@ main()
 #ifdef TUNED
         tuned_STREAM_Scale(scalar);
 #else
-	        for(iter = 0; iter < TIMES; iter++){
+	    for(iter = 0; iter < TIMES; iter++){
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			b[j] = scalar*c[j];
@@ -495,7 +500,7 @@ main()
 #ifdef TUNED
         tuned_STREAM_Add();
 #else
-	        for(iter = 0; iter < TIMES; iter++){
+        for(iter = 0; iter < TIMES; iter++){
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			c[j] = a[j]+b[j];
@@ -511,7 +516,7 @@ main()
 #ifdef TUNED
         tuned_STREAM_Triad(scalar);
 #else
-	        for(iter = 0; iter < TIMES; iter++){
+	    for(iter = 0; iter < TIMES; iter++){
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			a[j] = b[j]+scalar*c[j];
@@ -519,6 +524,7 @@ main()
 #endif
 		MPI_Barrier(MPI_COMM_WORLD);
 		t1 = MPI_Wtime();
+        //Martin Karp 29 November 2021, added /TIMES 
 		times[3][k] = (t1-t0)/TIMES;
 	}
 
