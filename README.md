@@ -9,5 +9,7 @@ but decreasing the array size, but perform the operation several times. We inves
 This prompts us to make certain changes to the original benchmark in order to disallow the compiler from removing our outer loop, in partiuclar we make redundant updates of a, b, c making it so that we technically perform some subtractions as well, which is different from the orignal benchmark.
 
 If you find this useful, or have improvements, please let me know.
+
+Best,
 Martin Karp 
 
