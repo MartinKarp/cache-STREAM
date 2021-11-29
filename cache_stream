@@ -17,11 +17,11 @@ cflags=""
 run="mpirun -np"
 
 #Can be modified if you want to, but does not make a large impact from experience
-TIMES=10
+NREPEATS=10
 
 for ((i=0; i <= $POW; i++))
 do
-    $cc $cflags -DSTREAM_ARRAY_SIZE=$nranks*$(($base**$(($POW-$i)))) -DTIMES=$(($base**$i)) -DNTIMES=$TIMES stream_mpi.c -o stream.$(($POW-$i))
+    $cc $cflags -DSTREAM_ARRAY_SIZE=$nranks*$(($base**$(($POW-$i)))) -DTIMES=$(($base**$i)) -DNTIMES=$NREPEATS stream_mpi.c -o stream.$(($POW-$i))
     for ((j=0; j <= $NRUNS; j++))
 	do
 	    $run $nranks ./stream.$(($POW-$i))
