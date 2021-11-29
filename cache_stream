@@ -1,0 +1,28 @@
+#!/bin/bash
+#Number of ranks (usually the number of physical cores)
+nranks=12
+#We go through vectors of length base^POW,base^(POW-1),...,base^1,1 per rank.
+#For shorter vectors we make sure that the number of ops remains constant.
+#We do this by choosing TIMES=base^POW/vector_length
+base=3
+POW=15
+#The number of times we run STREAM
+NRUNS=50
+#Compiler
+cc=mpicc
+#Flags
+cflags=""
+#Runner
+run="mpirun -np"
+
+for ((i=0; i <= $POW; i++))
+do
+    #Please change the compiler to whatever you want
+    $cc $cflags -DSTREAM_ARRAY_SIZE=$nranks*$(($base**$(($POW-$i)))) -DTIMES=$(($base**$i)) -DNTIMES=10 stream_mpi.c -o stream.$(($POW-$i))
+    for ((j=0; j <= $NRUNS; j++))
+	do
+	    $run $nranks ./stream.$(($POW-$i))
+    done
+    rm stream.$(($POW-$i))
+done
+
