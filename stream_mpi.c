@@ -254,7 +254,7 @@ main()
     int			BytesPerWord;
     int			i,k,iter;
     ssize_t		j;
-    STREAM_TYPE		scalar;
+    STREAM_TYPE		scalar, scalar_inv;
     double		t, times[4][NTIMES];
 	double		*TimesByRank;
 	double		t0,t1,tmin;
@@ -460,6 +460,7 @@ main()
     // 
 
     scalar = SCALAR;
+    scalar_inv = 1/scalar;
     for (k=0; k<NTIMES; k++)
 	{
 		// kernel 1: Copy
@@ -472,11 +473,13 @@ main()
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			c[j] = a[j];
+		for (j=0; j<array_elements; j++)
+			a[j] = c[j];
 		}
 #endif
 		MPI_Barrier(MPI_COMM_WORLD);
 		t1 = MPI_Wtime();
-		times[0][k] = (t1 - t0)/TIMES;
+		times[0][k] = 0.5*(t1 - t0)/TIMES;
 
 		// kernel 2: Scale
 		t0 = MPI_Wtime();
@@ -488,11 +491,13 @@ main()
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			b[j] = scalar*c[j];
+		for (j=0; j<array_elements; j++)
+			c[j] = scalar_inv*b[j];
 		}
 #endif
 		MPI_Barrier(MPI_COMM_WORLD);
 		t1 = MPI_Wtime();
-		times[1][k] = (t1-t0)/TIMES;
+		times[1][k] = 0.5*(t1-t0)/TIMES;
 	
 		// kernel 3: Add
 		t0 = MPI_Wtime();
@@ -504,11 +509,13 @@ main()
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			c[j] = a[j]+b[j];
+		for (j=0; j<array_elements; j++)
+			a[j] = c[j]-b[j];
 		}
 #endif
 		MPI_Barrier(MPI_COMM_WORLD);
 		t1 = MPI_Wtime();
-		times[2][k] = (t1-t0)/TIMES;
+		times[2][k] = 0.5*(t1-t0)/TIMES;
 	
 		// kernel 4: Triad
 		t0 = MPI_Wtime();
@@ -520,12 +527,14 @@ main()
 #pragma omp parallel for
 		for (j=0; j<array_elements; j++)
 			a[j] = b[j]+scalar*c[j];
+		for (j=0; j<array_elements; j++)
+			b[j] = a[j]-scalar*c[j];
 		}
 #endif
 		MPI_Barrier(MPI_COMM_WORLD);
 		t1 = MPI_Wtime();
         //Martin Karp 29 November 2021, added /TIMES 
-		times[3][k] = (t1-t0)/TIMES;
+		times[3][k] = 0.5*(t1-t0)/TIMES;
 	}
 
 	t0 = MPI_Wtime();
